@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: Payment API
+  version: 1.0.0
+paths:
+  /payments:
+    get:
+      operationId: getPayments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+    post:
+      summary: Create new payment
+      operationId: createPayment
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreateRequest'
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /payments/{id}:
+    get:
+      summary: Get Payment by Id
+      operationId: getPaymentById
+      tags:
+        - Payments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Id of payment
+      responses:
+        '200':
+          description: Got Payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment is not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete payment
+      operationId: deletePayment
+      tags:
+        - Payments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Payment is deleted
+        '404':
+          description: Payment is not found
+components:
+  schemas:
+    PaymentCreateRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          description: Amount of money
+          pattern: '^\d+(\.\d{1,2})?$'
+          example: "19.99"
+          minLength: 1
+          maxLength: 20
+        cashBack:
+          type: integer
+          format: int64
+          nullable: true
+          example: 20
+          maximum: 20
+        paymentType:
+          type: string
+          description: Payment type
+          enum:
+            - FOOD
+            - CAR
+            - SERVICE
+    Payment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentCreateRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
